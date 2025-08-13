@@ -17,11 +17,11 @@ def short_wait():
 
 def medium_wait():
     print("⏳ Medium wait...")
-    time.sleep(random.uniform(3, 5.5))
+    time.sleep(random.uniform(3, 5))
 
 def long_wait():
     print("⏳ Long wait...")
-    time.sleep(random.uniform(6.5, 8.5))
+    time.sleep(random.uniform(5, 7))
 
 # ===== Scroll Function =====
 def scroll_page(driver, times=5):
@@ -33,8 +33,8 @@ def scroll_page(driver, times=5):
 
 # ===== Apply to Jobs =====
 # ===== Apply to Jobs =====
-def apply_to_jobs(driver, max_applications):
-    print(f"🚀 Starting job application process (max {max_applications})...")
+def apply_to_jobs(driver):
+    print(f"🚀 Starting job application process ...")
     
     # Get all "View »" buttons first
     view_buttons = driver.find_elements(
@@ -47,12 +47,9 @@ def apply_to_jobs(driver, max_applications):
 
     applied = 0
     for i, view_button in enumerate(view_buttons):
-        if applied >= max_applications:
-            print("✅ Reached max applications limit.")
-            break
 
         try:
-            print(f"🟡 Opening job ({applied + 1}/{max_applications})...")
+            print(f"🟡 Opening job {applied + 1}...")
             highlight_element(driver, view_button)
             driver.execute_script("arguments[0].scrollIntoView(true);", view_button)
             driver.execute_script("arguments[0].click();", view_button)
@@ -83,6 +80,36 @@ def apply_to_jobs(driver, max_applications):
             continue
 
     print(f"✅ Done: Applied to {applied} jobs out of {total_jobs} found.")
+    return applied
+
+
+def process_all_job_pages(driver, total_jobs):
+    while True:
+        print("\n📄 Processing new page...")
+        
+        # Apply to jobs on this page
+        applied_this_page = apply_to_jobs(driver)
+        total_jobs += applied_this_page
+
+        # Try to find the Next » button
+        try:
+            next_btn = driver.find_element(
+                By.XPATH,
+                "//li[contains(@ng-click, 'nextPage') and not(contains(@class,'hidden'))]"
+            )
+            print("➡️ Clicking 'Next »' to go to next page...")
+            driver.execute_script("arguments[0].scrollIntoView(true);", next_btn)
+            driver.execute_script("arguments[0].click();", next_btn)
+            long_wait()  # wait for next page jobs to load
+        except:
+            print("✅ No 'Next »' button found. Reached last page.")
+            break
+
+    print(f"🏁 Finished. Total applied: {total_jobs}")
+    return total_jobs
+
+
+
 
 # ===== Highlight Element (for debugging) =====
 def highlight_element(driver, element):
@@ -163,26 +190,12 @@ def goToJobPage(driver, job_page):
     long_wait()
     print("✅ Job page loaded.")
 
-# # ===== MAIN SCRIPT =====
-# if __name__ == "__main__":
-#     load_dotenv()
-#     email = os.getenv("EMAIL")
-#     password = os.getenv("PASSWORD")
 
-#     if not email or not password:
-#         print("❌ EMAIL or PASSWORD not set in .env file. Exiting.")
-#         exit()
 
-#     job_page = {
-#         "url": "https://www.instahyre.com/candidate/opportunities/?matching=true",
-#         "max_applications": 50
-#     }
+def fill_exp_and_apply_all_pages_jobs(driver):
+    total_jobs = 0
+    for exp in ["0", "1"]:
+        fill_experience_and_search(driver, exp)
+        total_jobs += process_all_job_pages(driver, total_jobs)
 
-#     driver = set_up_headless_chrome(background_run=False)
-#     loginInto(driver, "https://www.instahyre.com/login/", email, password)
-#     goToJobPage(driver, job_page)
-#     fill_experience_and_search(driver)
-#     apply_to_jobs(driver, job_page["max_applications"])
-
-#     print("\n🎉 Script complete. Closing browser.")
-#     driver.quit()
+    return total_jobs

@@ -22,7 +22,7 @@ password = os.getenv("PASSWORD")
 
 
 # Job types and their URLs
-job_page = {
+job_page_info = {
         "url": "https://www.instahyre.com/candidate/opportunities/?matching=true",
         "max_applications": 50
     }
@@ -38,13 +38,16 @@ driver = set_up_headless_chrome(background_run)
 loginInto(driver, "https://www.instahyre.com/login/", email, password)
 
 # --- Step 2: Go to job page ---
-goToJobPage(driver, job_page)
+goToJobPage(driver, job_page_info)
 
 
-fill_experience_and_search(driver, "0")
 
 
-apply_to_jobs(driver, job_page["max_applications"])
+
+total_jobs = fill_exp_and_apply_all_pages_jobs(driver)
+
+print(f"Total jobs applied: {total_jobs}")
+
 
 # --- Done ---
 print("\n🎉 Script complete. Closing browser.")
