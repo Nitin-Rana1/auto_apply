@@ -58,7 +58,7 @@ class AutoApply:
             )
             highlight_element(self.driver, exp_input)
             self.driver.execute_script("arguments[0].scrollIntoView(true);", exp_input)
-            self.short_wait()
+            short_wait()
 
             print("📝 Clearing and entering experience value: 1")
             exp_input.clear()
@@ -72,7 +72,7 @@ class AutoApply:
             highlight_element(self.driver, show_results_btn)
             self.driver.execute_script("arguments[0].click();", show_results_btn)
             print("✅ 'Show Results' button clicked.")
-            self.long_wait()
+            long_wait()
 
         except Exception as e:
             print(f"⚠️ Error setting experience: {e}")
@@ -83,7 +83,6 @@ class AutoApply:
             
             # Apply to jobs on this page
             applied_this_page = self.apply_to_jobs()
-            total_jobs += applied_this_page
 
             # Try to find the Next » button
             try:
@@ -94,11 +93,10 @@ class AutoApply:
                 print("➡️ Clicking 'Next »' to go to next page...")
                 self.driver.execute_script("arguments[0].scrollIntoView(true);", next_btn)
                 self.driver.execute_script("arguments[0].click();", next_btn)
-                self.long_wait()  # wait for next page jobs to load
+                long_wait()  # wait for next page jobs to load
             except:
                 print("✅ No 'Next »' button found. Reached last page.")
                 break
-        return total_jobs
 
     
     def step_4_finalize(self):
